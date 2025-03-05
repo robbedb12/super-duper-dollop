@@ -58,7 +58,7 @@ jobs:
               with:
                   pathMainFolderToDeploy: "C:\\iisServer"
                   nameProject: "angular"
-                  pathToBuildFolder: "dist\\script\\browser"
+                  pathToBuildFolder: "script\\dist\\script\\browser"
 
             - name: Start IIS Site
               run: |
