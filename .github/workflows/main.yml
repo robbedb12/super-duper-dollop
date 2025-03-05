@@ -1,0 +1,67 @@
+name: Build and deploy on pull request test1234
+
+on:
+    pull_request:
+        types:
+            - closed
+        branches:
+            - main # Trigger the workflow on push to the deployment branch
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Commit hash (long) or tag to roll back to (leave empty for latest push). Check README for more info."
+                required: false
+                type: string
+jobs:
+    build:
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        defaults:
+            run:
+                working-directory: test # Set the working directory for the test job
+        runs-on: self-hosted
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.inputs.version || 'main' }}
+                  fetch-depth: 0 # Fetch all history for all branches and tags
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build Angular app
+              run: |
+                  echo "building app"
+                  npm run build
+
+    deploy:
+        needs: build
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        defaults:
+            run:
+                working-directory: test # Set the working directory for the test job
+        runs-on: self-hosted
+        outputs:
+            reusable_output: ${{ steps.process-step.outputs.step_output }}
+
+        steps:
+            - name: Stop IIS Site
+              run: |
+                  echo "stopping IIS server"
+                  Stop-IISSite -name "angular app" -confirm:$false
+              shell: powershell
+
+            # - name: Backup and deploy IIS Directory
+            #   id: process-step
+            #   uses: ./.github/reusable-steps
+            #   with:
+            #       pathMainFolderToDeploy: "C:\\iisServer"
+            #       nameProject: "angular"
+            #       pathToBuildFolder: "C:\\GitProjects\\matero\\test\\dist\\test\\browser"
+
+            - name: Start IIS Site
+              run: |
+                  echo "starting IIS server"
+                  Start-IISSite -Name "angular app"
+              shell: powershell
