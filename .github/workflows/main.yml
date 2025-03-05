@@ -54,7 +54,7 @@ jobs:
 
             - name: Backup and deploy IIS Directory
               id: process-step
-              uses: ./.github/actions/action
+              uses: ./.github/actions
               with:
                   pathMainFolderToDeploy: "C:\\iisServer"
                   nameProject: "angular"
