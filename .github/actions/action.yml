@@ -22,9 +22,9 @@ runs:
     steps:
         - name: Backup and deploy IIS Directory
           run: |
-              $pathMainFolderToDeploy = ${{ inputs.pathMainFolderToDeploy }}
-              $nameProject = ${{ inputs.nameProject }}
-              $pathBuildFolder = ${{ inputs.pathToBuildFolder }}
+              $pathMainFolderToDeploy = "${{ inputs.pathMainFolderToDeploy }}"
+              $nameProject = "${{ inputs.nameProject }}"
+              $pathBuildFolder = "${{ inputs.pathToBuildFolder }}"
 
 
 
