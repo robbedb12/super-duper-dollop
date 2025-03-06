@@ -44,7 +44,7 @@ jobs:
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
-                working-directory: $WORKING_DIRECTORY # Set the working directory for the test job
+                working-directory: "$WORKING_DIRECTORY" # Set the working directory for the test job
         runs-on: self-hosted
         outputs:
             reusable_output: ${{ steps.process-step.outputs.step_output }}
