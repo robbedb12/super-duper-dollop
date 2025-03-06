@@ -13,30 +13,29 @@ on:
                 required: false
                 type: string
 jobs:
-    build:
-        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
-        defaults:
-            run:
-                working-directory: script # Set the working directory for the test job
-        runs-on: self-hosted
+    # build:
+    #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    #     defaults:
+    #         run:
+    #             working-directory: script # Set the working directory for the test job
+    #     runs-on: self-hosted
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event.inputs.version || 'main' }}
-                  fetch-depth: 0 # Fetch all history for all branches and tags
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v4
+    #           with:
+    #               ref: ${{ github.event.inputs.version || 'main' }}
+    #               fetch-depth: 0 # Fetch all history for all branches and tags
 
-            - name: Install dependencies
-              run: npm install
+    #         - name: Install dependencies
+    #           run: npm install
 
-            - name: Build Angular app
-              run: |
-                  echo "building app"
-                  npm run build
+    #         - name: Build Angular app
+    #           run: |
+    #               echo "building app"
+    #               npm run build
 
     deploy:
-        needs: build
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
@@ -62,14 +61,14 @@ jobs:
                   IISPoolName: "angular app"
 
             - name: ensure succes
-              if: steps.process-step.outputs.deployFail == 'true'
+              if: steps.process-step.outputs.backup-and-deploy-output == 'true'
               run: |
                   exit 1
               shell: powershell
 
             - name: Start IIS Site
               run: |
-                  echo ${{steps.process-step.outputs.deployFail}}
+                  echo ${{steps.process-step.outputs.backup-and-deploy-output}}
                   echo ${{steps.process-step.outputs}}
                   echo "starting IIS server"
                   Start-IISSite -Name "angular app"
