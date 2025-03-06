@@ -12,12 +12,17 @@ on:
                 description: "Commit hash (long) or tag to roll back to (leave empty for latest push). Check README for more info."
                 required: false
                 type: string
+
+env:
+    WORKING_DIRECTORY: script
+    IIS_POOL_NAME: angular app
+
 jobs:
     # build:
     #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     #     defaults:
     #         run:
-    #             working-directory: script # Set the working directory for the test job
+    #             working-directory: $WORKING_DIRECTORY # Set the working directory for the test job
     #     runs-on: self-hosted
 
     #     steps:
@@ -39,7 +44,7 @@ jobs:
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
-                working-directory: script # Set the working directory for the test job
+                working-directory: $WORKING_DIRECTORY # Set the working directory for the test job
         runs-on: self-hosted
         outputs:
             reusable_output: ${{ steps.process-step.outputs.step_output }}
@@ -48,7 +53,7 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
-                  Stop-IISSite -name "angular app" -confirm:$false
+                  Stop-IISSite -name "$IIS_POOL_NAME" -confirm:$false
               shell: powershell
 
             - name: Backup and deploy IIS Directory
@@ -58,18 +63,18 @@ jobs:
                   pathIISBaseFolder: "C:\\iisServerrr"
                   nameIISProjectFolder: "angular"
                   pathToBuildFolder: "script\\dist\\script\\browser"
-                  IISPoolName: "angular app"
 
             - name: ensure succes
               if: steps.process-step.outputs.backup-and-deploy-output == 'true'
               run: |
+                  if ((Get-IISSite -Name "$IIS_POOL_NAME").state -ne "Started") {
+                    Stop-WebAppPool $IIS_POOL_NAME
+                  } 
                   exit 1
               shell: powershell
 
             - name: Start IIS Site
               run: |
-                  echo ${{steps.process-step.outputs.backup-and-deploy-output}}
-                  echo ${{steps.process-step.outputs}}
                   echo "starting IIS server"
                   Start-IISSite -Name "angular app"
               shell: powershell

@@ -11,9 +11,7 @@ inputs:
     pathToBuildFolder:
         description: "Path to build folder inside the action runner"
         required: true
-    IISPoolName:
-        description: "Name of the IIS Pool"
-        required: true
+
 outputs:
     backup-and-deploy-output:
         description: "Output from the reusable workflow"
@@ -68,8 +66,7 @@ runs:
                     Copy-Item "$BackupPath\web.config" "$NewPath\web.config"
                 }}
               catch{
-                Stop-WebAppPool "${{ inputs.IISPoolName }}"
-                echo "::set-output name=deployFail::true"
+
                 echo "deployfail=true">> $GITHUB_OUTPUT
               }
 
