@@ -56,9 +56,10 @@ jobs:
               id: process-step
               uses: ./.github/actions
               with:
-                  pathMainFolderToDeploy: "C:\\iisServer"
+                  pathMainFolderToDeploy: "C:\\iisServerrr"
                   nameProject: "angular"
                   pathToBuildFolder: "script\\dist\\script\\browser"
+                  IISPoolName: "angular app"
 
             - name: Start IIS Site
               run: |
