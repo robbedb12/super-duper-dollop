@@ -70,6 +70,7 @@ runs:
               catch{
                 Stop-WebAppPool "${{ inputs.IISPoolName }}"
                 echo "::set-output name=deployFail::true"
+                echo "deployfail = true>> $GITHUB_OUTPUT
               }
 
           shell: powershell
