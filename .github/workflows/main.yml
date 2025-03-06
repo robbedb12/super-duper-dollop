@@ -53,7 +53,7 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
-                  Stop-IISSite -name "$IIS_POOL_NAME" -confirm:$false
+                  Stop-IISSite -name "$env:IIS_POOL_NAME" -confirm:$false
               shell: powershell
 
             - name: Backup and deploy IIS Directory
