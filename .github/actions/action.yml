@@ -15,9 +15,9 @@ inputs:
         description: "Name of the IIS Pool"
         required: true
 outputs:
-    reusable_output:
+    backup-and-deploy-output:
         description: "Output from the reusable workflow"
-        value: ${{ steps.backup-and-deploy.outputs.step_output }}
+        value: ${{ steps.backup-and-deploy.outputs.deployFail}}
 
 runs:
     using: "composite"
@@ -69,6 +69,7 @@ runs:
                 }}
               catch{
                 Stop-WebAppPool "${{ inputs.IISPoolName }}"
+                echo "::set-output name=deployFail::true"
               }
 
           shell: powershell

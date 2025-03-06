@@ -61,6 +61,12 @@ jobs:
                   pathToBuildFolder: "script\\dist\\script\\browser"
                   IISPoolName: "angular app"
 
+            - name: ensure succes
+              if: steps.process-step.outputs.deployFail == 'true'
+              run: |
+                  exit 1
+              shell: powershell
+
             - name: Start IIS Site
               run: |
                   echo "starting IIS server"
