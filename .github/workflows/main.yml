@@ -69,6 +69,8 @@ jobs:
 
             - name: Start IIS Site
               run: |
+                  echo ${{steps.process-step.outputs.deployFail}}
+                  echo ${{steps.process-step.outputs}}
                   echo "starting IIS server"
                   Start-IISSite -Name "angular app"
               shell: powershell
