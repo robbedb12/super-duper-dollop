@@ -14,37 +14,39 @@ on:
                 type: string
 
 env:
-    WORKING_DIRECTORY: "script"
+    WORKING_DIRECTORY: script
     IIS_POOL_NAME: angular app
+    NAME_IIS_PROJECT_FOLDER: angular
+    PATH_IIS_BASE_FOLDER: C:\\iisServer
 
 jobs:
-    # build:
-    #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
-    #     defaults:
-    #         run:
-    #             working-directory: $WORKING_DIRECTORY # Set the working directory for the test job
-    #     runs-on: self-hosted
+    build:
+        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        defaults:
+            run:
+                working-directory: script # Set the working directory for the test job
+        runs-on: self-hosted
 
-    #     steps:
-    #         - name: Checkout code
-    #           uses: actions/checkout@v4
-    #           with:
-    #               ref: ${{ github.event.inputs.version || 'main' }}
-    #               fetch-depth: 0 # Fetch all history for all branches and tags
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.inputs.version || 'main' }}
+                  fetch-depth: 0 # Fetch all history for all branches and tags
 
-    #         - name: Install dependencies
-    #           run: npm install
+            - name: Install dependencies
+              run: npm install
 
-    #         - name: Build Angular app
-    #           run: |
-    #               echo "building app"
-    #               npm run build
+            - name: Build Angular app
+              run: |
+                  echo "building app"
+                  npm run build
 
     deploy:
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
-                working-directory: $WORKING_DIRECTORY # Set the working directory for the test job
+                working-directory: script # Set the working directory for the test job
         runs-on: self-hosted
         outputs:
             reusable_output: ${{ steps.process-step.outputs.step_output }}
@@ -53,22 +55,22 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
-                  Stop-IISSite -name "$env:IIS_POOL_NAME" -confirm:$false
+                  Stop-IISSite -name ${{env.IIS_POOL_NAME}} -confirm:$false
               shell: powershell
 
             - name: Backup and deploy IIS Directory
               id: process-step
               uses: ./.github/actions
               with:
-                  pathIISBaseFolder: "C:\\iisServerrr"
-                  nameIISProjectFolder: "angular"
-                  pathToBuildFolder: "script\\dist\\script\\browser"
+                  pathIISBaseFolder: "${{env.PATH_IIS_BASE_FOLDER}}"
+                  nameIISProjectFolder: "${{env.NAME_IIS_PROJECT_FOLDER}}"
+                  pathToBuildFolder: "${{env.WORKING_DIRECTORY}}\\dist\\script\\browser"
 
             - name: ensure succes
               if: steps.process-step.outputs.backup-and-deploy-output == 'true'
               run: |
-                  if ((Get-IISSite -Name "$IIS_POOL_NAME").state -ne "Started") {
-                    Stop-WebAppPool $IIS_POOL_NAME
+                  if ((Get-IISSite -Name "${{env.IIS_POOL_NAME}}").state -ne "Started") {
+                    Stop-WebAppPool "${{env.IIS_POOL_NAME}}"
                   } 
                   exit 1
               shell: powershell
@@ -76,5 +78,5 @@ jobs:
             - name: Start IIS Site
               run: |
                   echo "starting IIS server"
-                  Start-IISSite -Name "angular app"
+                  Start-IISSite -Name "${{env.IIS_POOL_NAME}}"
               shell: powershell
