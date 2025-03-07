@@ -15,9 +15,9 @@ on:
 
 env:
     WORKING_DIRECTORY: ${{ vars.WORKING_DIRECTORY}}
-    IIS_POOL_NAME: angular app
-    NAME_IIS_PROJECT_FOLDER: angular
-    PATH_IIS_BASE_FOLDER: C:\\iisServer
+    IIS_POOL_NAME: ${{secrets.IIS_POOL_NAME}}
+    NAME_IIS_PROJECT_FOLDER: ${{vars.NAME_IIS_PROJECT_FOLDER}}
+    PATH_IIS_BASE_FOLDER: ${{secrets.PATH_IIS_BASE_FOLDER}}
 
 jobs:
     build:
