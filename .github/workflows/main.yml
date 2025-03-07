@@ -14,7 +14,7 @@ on:
                 type: string
 
 env:
-    WORKING_DIRECTORY: script
+    WORKING_DIRECTORY: ${{ vars.WORKING_DIRECTORY}}
     IIS_POOL_NAME: angular app
     NAME_IIS_PROJECT_FOLDER: angular
     PATH_IIS_BASE_FOLDER: C:\\iisServer
