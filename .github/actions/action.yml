@@ -56,6 +56,8 @@ runs:
                     }
                 }
 
+                # Move the current folder to backup
+                # test123
                 if (Test-Path $NewPath ) {
                     Move-Item -Path $NewPath -Destination $BackupPath
                 }
