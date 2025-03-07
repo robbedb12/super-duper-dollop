@@ -17,14 +17,13 @@ env:
     WORKING_DIRECTORY: ${{ vars.WORKING_DIRECTORY}}
     IIS_POOL_NAME: ${{secrets.IIS_POOL_NAME}}
     NAME_IIS_PROJECT_FOLDER: ${{vars.NAME_IIS_PROJECT_FOLDER}}
-    PATH_IIS_BASE_FOLDER: ${{secrets.PATH_IIS_BASE_FOLDER}}
-
+    PATH_IIS_BASE_FOLDER: ${{vars.PATH_IIS_BASE_FOLDER}}
 jobs:
     build:
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
-                working-directory: script # Set the working directory for the test job
+                working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
         runs-on: self-hosted
 
         steps:
@@ -47,7 +46,7 @@ jobs:
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
-                working-directory: script # Set the working directory for the test job
+                working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
         runs-on: self-hosted
         outputs:
             reusable_output: ${{ steps.process-step.outputs.step_output }}
