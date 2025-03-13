@@ -33,6 +33,11 @@ jobs:
                   ref: ${{ github.event.inputs.version || 'main' }}
                   fetch-depth: 0 # Fetch all history for all branches and tags
 
+            - name: copy env
+              run: |
+                  copy-item -path "C:\iisServer\angular\web\environment.ts" -destination "src\\environments\\environment.ts"
+              shell: powershell
+
             - name: Install dependencies
               run: |
                   pwd
