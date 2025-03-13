@@ -37,7 +37,7 @@ jobs:
               run: |
                   pwd
                   npm install
-                  shell: powershell
+              shell: powershell
 
             - name: Build Angular app
               run: |
