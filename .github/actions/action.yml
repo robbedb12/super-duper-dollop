@@ -64,8 +64,8 @@ runs:
 
                 New-Item -ItemType Directory -Path $NewPath
                 Copy-Item -Recurse -Path "$pathBuildFolder\*" -Destination $NewPath
-                if (Test-Path "$BackupPath\web.config") {
-                    Copy-Item "$BackupPath\web.config" "$NewPath\web.config"
+                if (Test-Path "web.config") {
+                    Copy-Item "web.config" "$NewPath\web.config"
                 }}
               catch{
 
