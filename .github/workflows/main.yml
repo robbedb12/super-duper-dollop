@@ -34,7 +34,10 @@ jobs:
                   fetch-depth: 0 # Fetch all history for all branches and tags
 
             - name: Install dependencies
-              run: npm install
+              run: |
+                  pwd
+                  npm install
+                  shell: powershell
 
             - name: Build Angular app
               run: |
@@ -71,7 +74,7 @@ jobs:
               run: |
                   if ((Get-IISSite -Name "${{env.IIS_POOL_NAME}}").state -ne "Started") {
                     Stop-WebAppPool "${{env.IIS_POOL_NAME}}"
-                  } 
+                  }
                   exit 1
               shell: powershell
 
