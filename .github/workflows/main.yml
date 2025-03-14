@@ -62,9 +62,49 @@ jobs:
         steps:
             - name: Stop IIS Site
               run: |
-                  echo "stopping IIS server"
-                  whoami
-                  Stop-WebAppPool -name "${{env.IIS_POOL_NAME}}"
+                  # Log the start of the process
+                    echo "Stopping IIS server"
+
+                    # Log the current user
+                    $currentUser = whoami
+                    echo "Current user: $currentUser"
+
+                    # Define the application pool name
+                    $appPoolName = ${{secrets.IIS_POOL_NAME}}  # Replace with your actual application pool name
+
+                    # Log the application pool name
+                    echo "Attempting to stop application pool: $appPoolName"
+
+                    try {
+                        # Attempt to stop the application pool
+                        Stop-WebAppPool -Name $appPoolName
+                        echo "Application pool stopped successfully."
+                    } catch {
+                        # Log any errors that occur
+                        echo "Error stopping application pool: $_"
+
+                        # Check if the error is related to file permissions
+                        if ($_.Exception -is [System.UnauthorizedAccessException]) {
+                            echo "UnauthorizedAccessException: Check file permissions."
+
+                            # Log the path of the problematic configuration file, if available
+                            $errorDetails = $_.Exception.Message
+                            echo "Error details: $errorDetails"
+
+                            # Attempt to identify the configuration file path
+                            if ($errorDetails -match "Bestandsnaam:\s*(.+)") {
+                                $configFilePath = $matches[1]
+                                echo "Problematic configuration file: $configFilePath"
+
+                                # Check and log file permissions
+                                $filePermissions = Get-Acl -Path $configFilePath
+                                echo "File permissions for $configFilePath: $filePermissions"
+                            } else {
+                                echo "Configuration file path not found in error message."
+                            }
+                        }
+                    }
+
               shell: powershell
 
             - name: Backup and deploy IIS Directory
