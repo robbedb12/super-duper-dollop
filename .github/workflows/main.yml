@@ -63,7 +63,7 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
-                  Stop-IISSite -name "${{env.IIS_POOL_NAME}}" -confirm:$false
+                  Stop-WebAppPool -name "${{env.IIS_POOL_NAME}}" -confirm:$false
               shell: powershell
 
             - name: Backup and deploy IIS Directory
@@ -83,9 +83,8 @@ jobs:
                   exit 1
               shell: powershell
 
-
             - name: Start IIS Site
               run: |
                   echo "starting IIS server"
-                  Start-IISSite -Name "${{env.IIS_POOL_NAME}}"
+                  Stop-WebAppPool -Name "${{env.IIS_POOL_NAME}}"
               shell: powershell
