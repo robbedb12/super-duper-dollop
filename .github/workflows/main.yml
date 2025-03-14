@@ -29,32 +29,10 @@ jobs:
               uses: actions/github-script@v7
               with:
                   script: |
-                      const fs = require('fs');
-                      const path = require('path');
-                      const { promisify } = require('util');
-                      const pipeline = promisify(require('stream').pipeline);
-                      const got = require('got');
-
-                      const repo = 'robbedb12/super-duper-dollop';
-                      const branch = 'main';
-
-                      // Get the latest commit SHA
-                      const { data: commit } = await github.rest.repos.getBranch({
-                          owner: 'robbedb12',
-                          repo: 'super-duper-dollop',
-                          branch: 'main'
-                      });
-
-                      const commitSha = commit.commit.sha;
-                      console.log(`Latest commit SHA: ${commitSha}`);
-
-                      // Download the repository as a ZIP archive
-                      const downloadUrl = `https://github.com/${repo}/archive/${commitSha}.zip`;
-                      const downloadPath = path.resolve(`${repo.split('/')[1]}-${commitSha}.zip`);
-
-                      await pipeline(got.stream(downloadUrl), fs.createWriteStream(downloadPath));
-
-                      console.log(`Downloaded ZIP package to ${downloadPath}`);
+                      const { owner, repo } = context.repo;
+                      const latestCommitSha = context.sha;
+                      const zipUrl = `https://github.com/${owner}/${repo}/archive/${latestCommitSha}.zip`;
+                      core.setOutput("zip_url", zipUrl);
 
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
