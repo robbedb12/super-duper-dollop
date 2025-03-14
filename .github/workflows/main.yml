@@ -93,12 +93,21 @@ jobs:
 
                           # Attempt to identify the configuration file path
                           if ($errorDetails -match "Bestandsnaam:\s*(.+)") {
-                              $configFilePath = $matches[1]
+                              $configFilePath = $matches[1].Trim()
                               echo "Problematic configuration file: $configFilePath"
 
-                              # Check and log file permissions
-                              $filePermissions = Get-Acl -Path $configFilePath
-                              echo "File permissions for ${configFilePath}: $filePermissions"
+                              # Verify the path is valid
+                              if (Test-Path -Path $configFilePath) {
+                                  # Check and log file permissions
+                                  try {
+                                      $filePermissions = Get-Acl -Path $configFilePath
+                                      echo "File permissions for ${configFilePath}: $filePermissions"
+                                  } catch {
+                                      echo "Error retrieving file permissions: $_"
+                                  }
+                              } else {
+                                  echo "The specified path does not exist: $configFilePath"
+                              }
                           } else {
                               echo "Configuration file path not found in error message."
                           }
