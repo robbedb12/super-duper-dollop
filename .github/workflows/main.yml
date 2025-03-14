@@ -19,6 +19,39 @@ env:
     NAME_IIS_PROJECT_FOLDER: ${{vars.NAME_IIS_PROJECT_FOLDER}}
     PATH_IIS_BASE_FOLDER: ${{vars.PATH_IIS_BASE_FOLDER}}
 jobs:
+    test:
+        runs-on: self-hosted
+        steps:
+            - name: Download ZIP package
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const { data: release } = await github.rest.repos.getLatestRelease({
+                          owner: 'OWNER',
+                          repo: 'REPO'
+                      });
+
+                      const asset = release.assets.find(asset => asset.name === 'NAME_OF_ZIP_FILE.zip');
+
+                      if (!asset) {
+                          throw new Error('ZIP file not found in the latest release');
+                      }
+
+                      const downloadUrl = asset.url;
+                      const fs = require('fs');
+                      const path = require('path');
+                      const { promisify } = require('util');
+                      const pipeline = promisify(require('stream').pipeline);
+                      const got = require('got');
+
+                      const downloadPath = path.resolve('NAME_OF_ZIP_FILE.zip');
+                      await pipeline(got.stream(downloadUrl), fs.createWriteStream(downloadPath));
+
+                      console.log(`Downloaded ZIP package to ${downloadPath}`);
+
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     # build:
     #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     #     defaults:
@@ -49,92 +82,92 @@ jobs:
     #               echo "building app"
     #               npm run build
 
-    deploy:
-        # needs: build
-        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
-        defaults:
-            run:
-                working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
-        runs-on: self-hosted
-        outputs:
-            reusable_output: ${{ steps.process-step.outputs.step_output }}
+    # deploy:
+    #     # needs: build
+    #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    #     defaults:
+    #         run:
+    #             working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
+    #     runs-on: self-hosted
+    #     outputs:
+    #         reusable_output: ${{ steps.process-step.outputs.step_output }}
 
-        steps:
-            - name: Stop IIS Site
-              run: |
-                  # Log the start of the process
-                  echo "Stopping IIS server"
+    #     steps:
+    #         - name: Stop IIS Site
+    #           run: |
+    #               # Log the start of the process
+    #               echo "Stopping IIS server"
 
-                  # Log the current user
-                  $currentUser = whoami
-                  echo "Current user: $currentUser"
+    #               # Log the current user
+    #               $currentUser = whoami
+    #               echo "Current user: $currentUser"
 
-                  # Define the application pool name
-                  $appPoolName = "***"  # Replace with your actual application pool name
+    #               # Define the application pool name
+    #               $appPoolName = "***"  # Replace with your actual application pool name
 
-                  # Log the application pool name
-                  echo "Attempting to stop application pool: $appPoolName"
+    #               # Log the application pool name
+    #               echo "Attempting to stop application pool: $appPoolName"
 
-                  try {
-                      # Attempt to stop the application pool
-                      Stop-WebAppPool -Name $appPoolName
-                      echo "Application pool stopped successfully."
-                  } catch {
-                      # Log any errors that occur
-                      echo "Error stopping application pool: $_"
+    #               try {
+    #                   # Attempt to stop the application pool
+    #                   Stop-WebAppPool -Name $appPoolName
+    #                   echo "Application pool stopped successfully."
+    #               } catch {
+    #                   # Log any errors that occur
+    #                   echo "Error stopping application pool: $_"
 
-                      # Check if the error is related to file permissions
-                      if ($_.Exception -is [System.UnauthorizedAccessException]) {
-                          echo "UnauthorizedAccessException: Check file permissions."
+    #                   # Check if the error is related to file permissions
+    #                   if ($_.Exception -is [System.UnauthorizedAccessException]) {
+    #                       echo "UnauthorizedAccessException: Check file permissions."
 
-                          # Log the path of the problematic configuration file, if available
-                          $errorDetails = $_.Exception.Message
-                          echo "Error details: $errorDetails"
+    #                       # Log the path of the problematic configuration file, if available
+    #                       $errorDetails = $_.Exception.Message
+    #                       echo "Error details: $errorDetails"
 
-                          # Attempt to identify the configuration file path
-                          if ($errorDetails -match "Bestandsnaam:\s*(.+)") {
-                              $configFilePath = $matches[1].Trim()
-                              echo "Problematic configuration file: $configFilePath"
+    #                       # Attempt to identify the configuration file path
+    #                       if ($errorDetails -match "Bestandsnaam:\s*(.+)") {
+    #                           $configFilePath = $matches[1].Trim()
+    #                           echo "Problematic configuration file: $configFilePath"
 
-                              # Verify the path is valid
-                              if (Test-Path -Path $configFilePath) {
-                                  # Check and log file permissions
-                                  try {
-                                      $filePermissions = Get-Acl -Path $configFilePath
-                                      echo "File permissions for ${configFilePath}: $filePermissions"
-                                  } catch {
-                                      echo "Error retrieving file permissions: $_"
-                                  }
-                              } else {
-                                  echo "The specified path does not exist: $configFilePath"
-                              }
-                          } else {
-                              echo "Configuration file path not found in error message."
-                          }
-                      }
-                  }
+    #                           # Verify the path is valid
+    #                           if (Test-Path -Path $configFilePath) {
+    #                               # Check and log file permissions
+    #                               try {
+    #                                   $filePermissions = Get-Acl -Path $configFilePath
+    #                                   echo "File permissions for ${configFilePath}: $filePermissions"
+    #                               } catch {
+    #                                   echo "Error retrieving file permissions: $_"
+    #                               }
+    #                           } else {
+    #                               echo "The specified path does not exist: $configFilePath"
+    #                           }
+    #                       } else {
+    #                           echo "Configuration file path not found in error message."
+    #                       }
+    #                   }
+    #               }
 
-              shell: powershell
+    #           shell: powershell
 
-            - name: Backup and deploy IIS Directory
-              id: process-step
-              uses: ./.github/actions
-              with:
-                  pathIISBaseFolder: "${{env.PATH_IIS_BASE_FOLDER}}"
-                  nameIISProjectFolder: "${{env.NAME_IIS_PROJECT_FOLDER}}"
-                  pathToBuildFolder: "${{env.WORKING_DIRECTORY}}\\dist\\script\\browser"
+    #         - name: Backup and deploy IIS Directory
+    #           id: process-step
+    #           uses: ./.github/actions
+    #           with:
+    #               pathIISBaseFolder: "${{env.PATH_IIS_BASE_FOLDER}}"
+    #               nameIISProjectFolder: "${{env.NAME_IIS_PROJECT_FOLDER}}"
+    #               pathToBuildFolder: "${{env.WORKING_DIRECTORY}}\\dist\\script\\browser"
 
-            - name: ensure succes
-              if: steps.process-step.outputs.backup-and-deploy-output == 'true'
-              run: |
-                  if ((Get-IISSite -Name "${{env.IIS_POOL_NAME}}").state -ne "Started") {
-                    Stop-WebAppPool "${{env.IIS_POOL_NAME}}"
-                  }
-                  exit 1
-              shell: powershell
+    #         - name: ensure succes
+    #           if: steps.process-step.outputs.backup-and-deploy-output == 'true'
+    #           run: |
+    #               if ((Get-IISSite -Name "${{env.IIS_POOL_NAME}}").state -ne "Started") {
+    #                 Stop-WebAppPool "${{env.IIS_POOL_NAME}}"
+    #               }
+    #               exit 1
+    #           shell: powershell
 
-            - name: Start IIS Site
-              run: |
-                  echo "starting IIS server"
-                  Stop-WebAppPool -Name "${{env.IIS_POOL_NAME}}"
-              shell: powershell
+    #         - name: Start IIS Site
+    #           run: |
+    #               echo "starting IIS server"
+    #               Stop-WebAppPool -Name "${{env.IIS_POOL_NAME}}"
+    #           shell: powershell
