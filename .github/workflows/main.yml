@@ -27,11 +27,11 @@ jobs:
               with:
                   script: |
                       const { data: release } = await github.rest.repos.getLatestRelease({
-                          owner: 'OWNER',
-                          repo: 'REPO'
+                          owner: 'robbedb12',
+                          repo: 'super-duper-dollop'
                       });
 
-                      const asset = release.assets.find(asset => asset.name === 'NAME_OF_ZIP_FILE.zip');
+                      const asset = release.assets.find(asset => asset.name === 'test.zip');
 
                       if (!asset) {
                           throw new Error('ZIP file not found in the latest release');
@@ -44,7 +44,7 @@ jobs:
                       const pipeline = promisify(require('stream').pipeline);
                       const got = require('got');
 
-                      const downloadPath = path.resolve('NAME_OF_ZIP_FILE.zip');
+                      const downloadPath = path.resolve('test.zip');
                       await pipeline(got.stream(downloadUrl), fs.createWriteStream(downloadPath));
 
                       console.log(`Downloaded ZIP package to ${downloadPath}`);
