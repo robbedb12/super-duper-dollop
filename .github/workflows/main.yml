@@ -19,38 +19,38 @@ env:
     NAME_IIS_PROJECT_FOLDER: ${{vars.NAME_IIS_PROJECT_FOLDER}}
     PATH_IIS_BASE_FOLDER: ${{vars.PATH_IIS_BASE_FOLDER}}
 jobs:
-    build:
-        if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
-        defaults:
-            run:
-                working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
-        runs-on: self-hosted
+    # build:
+    #     if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    #     defaults:
+    #         run:
+    #             working-directory: ${{vars.WORKING_DIRECTORY}} # Set the working directory for the test job
+    #     runs-on: self-hosted
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event.inputs.version || 'main' }}
-                  fetch-depth: 0 # Fetch all history for all branches and tags
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v4
+    #           with:
+    #               ref: ${{ github.event.inputs.version || 'main' }}
+    #               fetch-depth: 0 # Fetch all history for all branches and tags
 
-            - name: copy env
-              run: |
-                  copy-item -path "C:\iisServer\angular\web\environment.ts" -destination "src\\environments\\environment.ts"
-              shell: powershell
+    #         - name: copy env
+    #           run: |
+    #               copy-item -path "C:\iisServer\angular\web\environment.ts" -destination "src\\environments\\environment.ts"
+    #           shell: powershell
 
-            - name: Install dependencies
-              run: |
-                  pwd
-                  npm install
-              shell: powershell
+    #         - name: Install dependencies
+    #           run: |
+    #               pwd
+    #               npm install
+    #           shell: powershell
 
-            - name: Build Angular app
-              run: |
-                  echo "building app"
-                  npm run build
+    #         - name: Build Angular app
+    #           run: |
+    #               echo "building app"
+    #               npm run build
 
     deploy:
-        needs: build
+        # needs: build
         if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         defaults:
             run:
@@ -63,7 +63,7 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
-                  Stop-WebAppPool -name "${{env.IIS_POOL_NAME}}" -confirm:$false
+                  Stop-WebAppPool -name "${{env.IIS_POOL_NAME}}"
               shell: powershell
 
             - name: Backup and deploy IIS Directory
