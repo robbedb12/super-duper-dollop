@@ -63,6 +63,7 @@ jobs:
             - name: Stop IIS Site
               run: |
                   echo "stopping IIS server"
+                  whoami
                   Stop-WebAppPool -name "${{env.IIS_POOL_NAME}}"
               shell: powershell
 
