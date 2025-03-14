@@ -23,28 +23,32 @@ jobs:
         runs-on: self-hosted
         steps:
             - name: Download ZIP package
-              uses: actions/github-script@v6
+              uses: actions/github-script@v7
               with:
                   script: |
-                      const { data: release } = await github.rest.repos.getLatestRelease({
-                          owner: 'robbedb12',
-                          repo: 'super-duper-dollop'
-                      });
-
-                      const asset = release.assets.find(asset => asset.name === 'test.zip');
-
-                      if (!asset) {
-                          throw new Error('ZIP file not found in the latest release');
-                      }
-
-                      const downloadUrl = asset.url;
                       const fs = require('fs');
                       const path = require('path');
                       const { promisify } = require('util');
                       const pipeline = promisify(require('stream').pipeline);
                       const got = require('got');
 
-                      const downloadPath = path.resolve('test.zip');
+                      const repo = 'robbedb12/super-duper-dollop';
+                      const branch = 'main';
+
+                      // Get the latest commit SHA
+                      const { data: commit } = await github.rest.repos.getBranch({
+                          owner: 'robbedb12',
+                          repo: 'super-duper-dollop',
+                          branch: 'main'
+                      });
+
+                      const commitSha = commit.commit.sha;
+                      console.log(`Latest commit SHA: ${commitSha}`);
+
+                      // Download the repository as a ZIP archive
+                      const downloadUrl = `https://github.com/${repo}/archive/${commitSha}.zip`;
+                      const downloadPath = path.resolve(`${repo.split('/')[1]}-${commitSha}.zip`);
+
                       await pipeline(got.stream(downloadUrl), fs.createWriteStream(downloadPath));
 
                       console.log(`Downloaded ZIP package to ${downloadPath}`);
